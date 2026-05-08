@@ -1,2 +1,2 @@
-﻿using var game = new LastTree.Game1();
+﻿using var game = new Game1();
 game.Run();
