@@ -14,17 +14,24 @@ public class Game1 : Game
     private int _treeMaxHealth = 1000;
     private int _treeHealth = 1000;
 
-    private List<Army> _armies;
-    private List<Enemy> _enemies;
+    private List<Army> _armies = new List<Army>();
+    private List<Enemy> _enemies = new List<Enemy>();
 
-    private int _playerDNA = 0;
-    private int _maxDNA = 500;
+    private PlayerDna _myDna;
+    
+    private Rectangle[] _spawnButtons = new Rectangle[3];
+    private int[] _unitCosts = { 20, 40, 70 };
+    private MouseState _prevMouse;
+
+    private float _enemySpawnTimer = 0;
+    private int _enemyDNA = 30;
 
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
         _graphics.PreferredBackBufferWidth = 1280;
         _graphics.PreferredBackBufferHeight = 720;
+        IsMouseVisible = true;
     }
 
     protected override void Initialize()
@@ -32,14 +39,10 @@ public class Game1 : Game
         _ground = new Rectangle(0, 620, 1280, 100);
         _tree = new Rectangle(0, 120, 150, 500);
 
-        _armies = new List<Army>();
-        _enemies = new List<Enemy>();
+        _myDna = new PlayerDna(50, 100);
 
-        _armies.Add(new Army(200, 570, 50, 2, 50, 10, Color.DarkBlue));
-        _armies.Add(new Army(350, 520, 100, 1, 150, 30, Color.Navy));
-        
-        _enemies.Add(new Enemy(1000, 570, 50, -2, 50, 10, Color.Orange));
-        _enemies.Add(new Enemy(1150, 520, 100, -1, 150, 30, Color.DarkOrange));
+        for (int i = 0; i < 3; i++)
+            _spawnButtons[i] = new Rectangle(200 + (i * 100), 630, 80, 80);
 
         base.Initialize();
     }
@@ -55,77 +58,86 @@ public class Game1 : Game
     {
         if (Keyboard.GetState().IsKeyDown(Keys.Escape)) Exit();
 
+        MouseState currentMouse = Mouse.GetState();
+        Point mousePos = new Point(currentMouse.X, currentMouse.Y);
+
+        if (currentMouse.LeftButton == ButtonState.Pressed && _prevMouse.LeftButton == ButtonState.Released)
+        {
+            if (_spawnButtons[0].Contains(mousePos) && _myDna.Spend(_unitCosts[0]))
+            {
+                _armies.Add(new Army(150, 570, 50, 2, 50, 10, Color.LightBlue));
+            }
+            else if (_spawnButtons[1].Contains(mousePos) && _myDna.Spend(_unitCosts[1]))
+            {
+                _armies.Add(new Army(150, 545, 75, 1, 100, 25, Color.Blue));
+            }
+            else if (_spawnButtons[2].Contains(mousePos) && _myDna.Spend(_unitCosts[2]))
+            {
+                _armies.Add(new Army(150, 520, 100, 1, 200, 50, Color.DarkBlue));
+            }
+        }
+        _prevMouse = currentMouse;
+
+        _enemySpawnTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+        if (_enemySpawnTimer > 3.0f)
+        {
+            _enemyDNA += 25;
+            if (_enemyDNA >= 70) { _enemies.Add(new Enemy(1280, 520, 100, -1, 200, 50, Color.DarkRed)); _enemyDNA -= 70; }
+            else if (_enemyDNA >= 40) { _enemies.Add(new Enemy(1280, 545, 75, -1, 100, 25, Color.Red)); _enemyDNA -= 40; }
+            else if (_enemyDNA >= 20) { _enemies.Add(new Enemy(1280, 570, 50, -2, 50, 10, Color.Orange)); _enemyDNA -= 20; }
+            _enemySpawnTimer = 0;
+        }
+
         foreach (var a in _armies)
         {
-            bool isFighting = false;
+            bool fight = false;
             foreach (var e in _enemies)
             {
                 if (a.Hitbox.Intersects(e.Hitbox))
                 {
-                    isFighting = true;
-                    if (a.Cooldown == 0)
-                    {
-                        e.Health -= a.Damage;
-                        a.Cooldown = 30;
-                    }
+                    fight = true;
+                    if (a.Cooldown == 0) { e.Health -= a.Damage; a.Cooldown = 40; }
                     break;
                 }
             }
-
-            if (!isFighting) a.Hitbox.X += a.SpeedX;
+            if (!fight) a.Hitbox.X += a.SpeedX;
             if (a.Cooldown > 0) a.Cooldown--;
         }
 
         foreach (var e in _enemies)
         {
-            bool isFighting = false;
+            bool fight = false;
             foreach (var a in _armies)
             {
                 if (e.Hitbox.Intersects(a.Hitbox))
                 {
-                    isFighting = true;
-                    if (e.Cooldown == 0)
-                    {
-                        a.Health -= e.Damage;
-                        e.Cooldown = 30;
-                    }
+                    fight = true;
+                    if (e.Cooldown == 0) { a.Health -= e.Damage; e.Cooldown = 40; }
                     break;
                 }
             }
-
-            if (!isFighting && e.Hitbox.Intersects(_tree))
+            if (!fight && e.Hitbox.Intersects(_tree))
             {
-                isFighting = true;
-                if (e.Cooldown == 0)
-                {
-                    _treeHealth -= e.Damage;
-                    e.Cooldown = 30;
-                }
+                fight = true;
+                if (e.Cooldown == 0) { _treeHealth -= e.Damage; e.Cooldown = 40; }
             }
-
-            if (!isFighting) e.Hitbox.X += e.SpeedX;
+            if (!fight) e.Hitbox.X += e.SpeedX;
             if (e.Cooldown > 0) e.Cooldown--;
         }
 
+        if (_treeHealth < 0) _treeHealth = 0;
+
         for (int i = _enemies.Count - 1; i >= 0; i--)
         {
-            if (_enemies[i].Health <= 0)
-            {
-                _playerDNA += 50;
-                if (_playerDNA > _maxDNA) _playerDNA = _maxDNA;
-                _enemies.RemoveAt(i);
+            if (_enemies[i].Health <= 0) 
+            { 
+                _myDna.Add(15); 
+                _enemies.RemoveAt(i); 
             }
         }
 
         for (int i = _armies.Count - 1; i >= 0; i--)
-        {
-            if (_armies[i].Health <= 0)
-            {
-                _armies.RemoveAt(i);
-            }
-        }
-
-        if (_treeHealth < 0) _treeHealth = 0;
+            if (_armies[i].Health <= 0) _armies.RemoveAt(i);
 
         base.Update(gameTime);
     }
@@ -142,24 +154,24 @@ public class Game1 : Game
         _spriteBatch.Draw(_pixel, new Rectangle(_tree.X, _tree.Y - 20, 150, 10), Color.Gray);
         _spriteBatch.Draw(_pixel, new Rectangle(_tree.X, _tree.Y - 20, treeHpWidth, 10), Color.Lime);
 
-        int dnaBarWidth = (int)((_playerDNA / (float)_maxDNA) * 300);
-        _spriteBatch.Draw(_pixel, new Rectangle(10, 10, 300, 20), Color.Gray);
-        _spriteBatch.Draw(_pixel, new Rectangle(10, 10, dnaBarWidth, 20), Color.Blue);
+        _myDna.Draw(_spriteBatch, _pixel);
+
+        for (int i = 0; i < 3; i++)
+        {
+            _spriteBatch.Draw(_pixel, _spawnButtons[i], Color.Gray);
+            _spriteBatch.Draw(_pixel, new Rectangle(_spawnButtons[i].X, _spawnButtons[i].Y + 85, (int)(80 * (_unitCosts[i]/100f)), 10), Color.Yellow);
+        }
 
         foreach (var a in _armies)
         {
             _spriteBatch.Draw(_pixel, a.Hitbox, a.Color);
-            int hpWidth = (int)((a.Health / (float)a.MaxHealth) * a.Hitbox.Width);
-            _spriteBatch.Draw(_pixel, new Rectangle(a.Hitbox.X, a.Hitbox.Y - 10, a.Hitbox.Width, 5), Color.Red);
-            _spriteBatch.Draw(_pixel, new Rectangle(a.Hitbox.X, a.Hitbox.Y - 10, hpWidth, 5), Color.Lime);
+            _spriteBatch.Draw(_pixel, new Rectangle(a.Hitbox.X, a.Hitbox.Y - 15, (int)(a.Hitbox.Width * (a.Health / (float)a.MaxHealth)), 8), Color.Lime);
         }
 
         foreach (var e in _enemies)
         {
             _spriteBatch.Draw(_pixel, e.Hitbox, e.Color);
-            int hpWidth = (int)((e.Health / (float)e.MaxHealth) * e.Hitbox.Width);
-            _spriteBatch.Draw(_pixel, new Rectangle(e.Hitbox.X, e.Hitbox.Y - 10, e.Hitbox.Width, 5), Color.Red);
-            _spriteBatch.Draw(_pixel, new Rectangle(e.Hitbox.X, e.Hitbox.Y - 10, hpWidth, 5), Color.Lime);
+            _spriteBatch.Draw(_pixel, new Rectangle(e.Hitbox.X, e.Hitbox.Y - 15, (int)(e.Hitbox.Width * (e.Health / (float)e.MaxHealth)), 8), Color.Red);
         }
 
         _spriteBatch.End();
