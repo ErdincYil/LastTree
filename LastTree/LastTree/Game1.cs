@@ -29,7 +29,7 @@ public class Game1 : Game
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
-        _graphics.PreferredBackBufferWidth = 1280;
+        _graphics.PreferredBackBufferWidth = 1080;
         _graphics.PreferredBackBufferHeight = 720;
         IsMouseVisible = true;
     }
@@ -39,7 +39,7 @@ public class Game1 : Game
         _ground = new Rectangle(0, 620, 1280, 100);
         _tree = new Rectangle(0, 120, 150, 500);
 
-        _myDna = new PlayerDna(50, 100);
+        _myDna = new PlayerDna(300, 999);
 
         for (int i = 0; i < 3; i++)
             _spawnButtons[i] = new Rectangle(200 + (i * 100), 630, 80, 80);
@@ -89,7 +89,7 @@ public class Game1 : Game
         }
 
         foreach (var a in _armies)
-        {
+        { 
             bool fight = false;
             foreach (var e in _enemies)
             {
@@ -131,7 +131,7 @@ public class Game1 : Game
         {
             if (_enemies[i].Health <= 0) 
             { 
-                _myDna.Add(15); 
+                _myDna.Add(100); 
                 _enemies.RemoveAt(i); 
             }
         }
