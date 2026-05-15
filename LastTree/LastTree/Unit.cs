@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 
-public class Army
+public class Unit
 {
     public Rectangle Hitbox;
     public int SpeedX;
@@ -9,8 +9,9 @@ public class Army
     public int Health;
     public int Damage;
     public int Cooldown;
+    public bool IsEnemy; 
 
-    public Army(int x, int y, int size, int speed, int health, int damage, Color color)
+    public Unit(int x, int y, int size, int speed, int health, int damage, Color color, bool isEnemy)
     {
         Hitbox = new Rectangle(x, y, size, size);
         SpeedX = speed;
@@ -19,5 +20,6 @@ public class Army
         Health = health;
         Damage = damage;
         Cooldown = 0;
+        IsEnemy = isEnemy;
     }
 }

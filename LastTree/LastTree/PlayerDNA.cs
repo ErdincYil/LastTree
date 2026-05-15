@@ -6,18 +6,17 @@ public class PlayerDna
     public int Current;
     public int Max;
     public Rectangle BarBg;
-    public Rectangle BarFill;
 
-    public PlayerDna(int startAmount, int maxAmount)
+    public PlayerDna()
     {
-        Current = startAmount;
-        Max = maxAmount;
+        Current = 50;
+        Max = 300;
         BarBg = new Rectangle(10, 10, 300, 30);
     }
 
     public void Add(int amount)
     {
-        Current += amount;
+        Current = Current + amount;
         if (Current > Max) Current = Max;
     }
 
@@ -25,7 +24,7 @@ public class PlayerDna
     {
         if (Current >= amount)
         {
-            Current -= amount;
+            Current = Current - amount;
             return true;
         }
         return false;
@@ -34,9 +33,8 @@ public class PlayerDna
     public void Draw(SpriteBatch spriteBatch, Texture2D pixel)
     {
         spriteBatch.Draw(pixel, BarBg, Color.DimGray);
-        
-        float ratio = (float)Current / Max;
-        BarFill = new Rectangle(BarBg.X, BarBg.Y, (int)(BarBg.Width * ratio), BarBg.Height);
+        int maviUzunluk = (Current * 300) / Max;
+        Rectangle BarFill = new Rectangle(10, 10, maviUzunluk, 30);
         spriteBatch.Draw(pixel, BarFill, Color.RoyalBlue);
     }
 }
