@@ -45,9 +45,7 @@ public class Unit
     public int GetMaxFrames()
     {
         if (!IsEnemy)
-        {
-            // Samuray (Tip 1) eski temiz standart haline döndürüldü
-            if (UnitType == 1) return State == 0 ? 8 : (State == 1 ? 6 : (State == 2 ? 4 : (State == 3 ? 4 : 10)));
+        {            if (UnitType == 1) return State == 0 ? 8 : (State == 1 ? 6 : (State == 2 ? 4 : (State == 3 ? 4 : 10)));
             if (UnitType == 2) return State == 0 ? 8 : (State == 1 ? 8 : (State == 2 ? 7 : (State == 3 ? 4 : 6)));
             if (UnitType == 3) return State == 4 ? 1 : 3;
         }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media; // YENİ: Müzik çalmak için gereken kütüphane
+using Microsoft.Xna.Framework.Media; 
 using System.Collections.Generic;
 
 public class Game1 : Game
@@ -17,7 +17,7 @@ public class Game1 : Game
     private Texture2D _e3IdleTex, _e3WalkTex, _e3AttackTex, _e3HurtTex, _e3DieTex;
     private Texture2D _btnBaslatTex, _btnRestartTex, _btnExitTex;
 
-    private Song _backgroundMusic; // YENİ: Arka plan müziği değişkenimiz
+    private Song _backgroundMusic;
 
     private int _gameState = 0; 
 
@@ -106,11 +106,11 @@ public class Game1 : Game
         _btnRestartTex = Content.Load<Texture2D>("restart");
         _btnExitTex    = Content.Load<Texture2D>("exit");
 
-        // YENİ: Müziği yükle ve çalmaya başla
-        _backgroundMusic = Content.Load<Song>("audio"); // Dosya adı neyse (audio) buraya onu yazıyoruz
-        MediaPlayer.IsRepeating = true; // Müzik bitince başa sarsın
-        MediaPlayer.Volume = 0.5f; // Sesi %50 seviyesine ayarladım (Çok bağırıyorsa burayı 0.2f falan yapabilirsin)
-        MediaPlayer.Play(_backgroundMusic); // Müziği başlat
+       
+        _backgroundMusic = Content.Load<Song>("audio");
+        MediaPlayer.IsRepeating = true;
+        MediaPlayer.Volume = 0.5f; 
+        MediaPlayer.Play(_backgroundMusic); 
     }
 
     private void StartGame()
@@ -411,14 +411,14 @@ public class Game1 : Game
         int doorHeight = 180; 
         int frameThickness = 4; 
 
-        // --- SOL TARAFTAKİ OYUNCU KAPISI ---
+
         Rectangle leftGateFrame = new Rectangle(0, floorY - doorHeight, doorWidth, doorHeight);
         Rectangle leftGateInterior = new Rectangle(frameThickness, floorY - doorHeight + frameThickness, doorWidth - 2 * frameThickness, doorHeight - frameThickness);
         
         _spriteBatch.Draw(_pixel, leftGateFrame, Color.Gray);
         _spriteBatch.Draw(_pixel, leftGateInterior, new Color(50, 50, 50)); 
 
-        // --- SAĞ TARAFTAKİ RAKİP KAPISI ---
+        
         int rightGateX = 1280 - doorWidth;
         Rectangle rightGateFrame = new Rectangle(rightGateX, floorY - doorHeight, doorWidth, doorHeight);
         Rectangle rightGateInterior = new Rectangle(rightGateX + frameThickness, floorY - doorHeight + frameThickness, doorWidth - 2 * frameThickness, doorHeight - frameThickness);
